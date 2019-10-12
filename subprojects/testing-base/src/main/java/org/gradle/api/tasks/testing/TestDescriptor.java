@@ -16,6 +16,7 @@
 
 package org.gradle.api.tasks.testing;
 
+import org.gradle.api.Incubating;
 import org.gradle.internal.HasInternalProtocol;
 
 import javax.annotation.Nullable;
@@ -40,6 +41,21 @@ public interface TestDescriptor {
      */
     @Nullable
     String getClassName();
+
+    /**
+     * The name for display. It may be the same as or different from {@link #getName()}
+     *
+     * @return the name for display.
+     */
+    @Incubating
+    String getDisplayName();
+
+    /**
+     * The class name for display. It may be the same as or different from {@link #getClassName()}
+     * @return the class name for display.
+     */
+    @Incubating
+    String getClassDisplayName();
 
     /**
      * Is this test a composite test?
