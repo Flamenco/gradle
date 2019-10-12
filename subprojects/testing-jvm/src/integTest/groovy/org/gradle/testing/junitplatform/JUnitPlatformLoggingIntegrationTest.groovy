@@ -18,8 +18,8 @@ package org.gradle.testing.junitplatform
 
 class JUnitPlatformLoggingIntegrationTest extends JUnitPlatformIntegrationSpec  {
 
-    def "should log display names"() {
-        given:
+    @Override
+    def setup() {
         buildFile << """
             test {
                 testLogging {
@@ -27,7 +27,12 @@ class JUnitPlatformLoggingIntegrationTest extends JUnitPlatformIntegrationSpec  
                 }
             }
         """
-        file("src/test/java/TopLevelClass.java")  << """
+    }
+
+    def "should log display names if present"() {
+        given:
+        file("src/test/java/pkg/TopLevelClass.java")  << """
+            package pkg;
             import org.junit.jupiter.api.DisplayName;
             import org.junit.jupiter.api.Nested;
             import org.junit.jupiter.api.Test;
@@ -49,19 +54,73 @@ class JUnitPlatformLoggingIntegrationTest extends JUnitPlatformIntegrationSpec  
                 @DisplayName("Method display name")
                 public void testMethod() {
                 }
+            }
+         """
+
+        when:
+        run("test")
+
+        then:
+        outputContains("Class level display name > Method display name")
+        outputContains("Class level display name > Nested class display name > Nested test method display name")
+    }
+
+    def "should fall back to plain name if no display names present"() {
+        given:
+        file("src/test/java/pkg/TopLevelClass.java")  << """
+            package pkg;
+
+            import org.junit.jupiter.api.DisplayName;
+            import org.junit.jupiter.api.Nested;
+            import org.junit.jupiter.api.Test;
+
+            public class TopLevelClass {
+
+                @Nested
+                public class NestedClass {
+
+                    @Test
+                    public void nestedTestMethod() {
+                    }
+                }
 
                 @Test
-                public void noDisplayName() {
+                public void testMethod() {
                 }
             }
          """
 
         when:
-        def result = run("test")
+        run("test")
 
         then:
-        result.output.contains("Class level display name > noDisplayName()")
-        result.output.contains("Class level display name > Method display name")
-        result.output.contains("Class level display name > Nested class display name > Nested test method display name")
+        outputContains("pkg.TopLevelClass > testMethod()")
+        outputContains("pkg.TopLevelClass > NestedClass > nestedTestMethod()")
     }
+
+    def "should use display name even if display is the same as class name"() {
+        given:
+        file("src/test/java/pkg/TopLevelClass.java")  << """
+            package pkg;
+
+            import org.junit.jupiter.api.DisplayName;
+            import org.junit.jupiter.api.Nested;
+            import org.junit.jupiter.api.Test;
+
+            @DisplayName("TopLevelClass")
+            public class TopLevelClass {
+
+                @Test
+                public void testMethod() {
+                }
+            }
+         """
+
+        when:
+        run("test")
+
+        then:
+        outputContains("TopLevelClass > testMethod()")
+    }
+
 }
