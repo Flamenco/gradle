@@ -120,7 +120,7 @@ class JUnitPlatformLoggingIntegrationTest extends JUnitPlatformIntegrationSpec  
         run("test")
 
         then:
-        outputContains("TopLevelClass > testMethod()")
+        outputContains("pkg.TopLevelClass > testMethod()")
     }
 
 }

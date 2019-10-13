@@ -20,10 +20,26 @@ package org.gradle.api.internal.tasks.testing
 import spock.lang.Specification
 
 class DefaultTestClassDescriptorTest extends Specification {
-    def hasUsefulToString() {
+
+    def "has useful toString()"() {
         DefaultTestClassDescriptor descriptor = new DefaultTestClassDescriptor('id', '<class-name>')
 
         expect:
         descriptor.toString() == 'Test class <class-name>'
+    }
+
+    def "handles display names"() {
+        given:
+        def descriptor = new DefaultTestClassDescriptor('id', className, classDisplayName)
+
+        expect:
+        descriptor.displayName == expectedDisplayName
+
+        where:
+        className                    | classDisplayName      | expectedDisplayName
+        'com.example.Foo'            | 'Foo'                 | 'com.example.Foo'
+        'com.example.Foo'            | 'Custom Display Name' | 'Custom Display Name'
+        'com.example.Foo$InnerClass' | 'InnerClass'          | 'InnerClass'
+        'com.example.Foo$InnerClass' | 'Custom Display Name' | 'Custom Display Name'
     }
 }
